@@ -1354,7 +1354,7 @@ elseif strcmp(num2str(strfind(block.DialogPrm(1).Data,'LINK')),'1') % blocco LIN
 elseif strcmp(num2str(strfind(block.DialogPrm(1).Data,'ROUTE')),'1') % blocco ROUTE
     
   %disp(strcat('Post Setup:',block.DialogPrm(1).Data))
-  block.NumDworks = 3;
+  block.NumDworks = 4;
   
   % bisogna determinare name_res in input
   
@@ -1385,12 +1385,19 @@ elseif strcmp(num2str(strfind(block.DialogPrm(1).Data,'ROUTE')),'1') % blocco RO
   block.Dwork(3).DatatypeID      = 0;      % double
   block.Dwork(3).Complexity      = 'Real'; % real
   block.Dwork(3).UsedAsDiscState = false;
+
+  % 
+  block.Dwork(4).Name            = 'id_route';
+  block.Dwork(4).Dimensions      = 1; 
+  block.Dwork(4).DatatypeID      = 0;      % double
+  block.Dwork(4).Complexity      = 'Real'; % real
+  block.Dwork(4).UsedAsDiscState = false;
   
 %-------------------------------------------------------------------------------  
   
 elseif strcmp(num2str(strfind(block.DialogPrm(1).Data,'SAVE')),'1') % blocco SAVE
   %disp(strcat('Post Setup:',block.DialogPrm(1).Data))
-  block.NumDworks = 4;
+  block.NumDworks = 5;
   
   query=strcat('SELECT * FROM save2db AS a JOIN resources AS b WHERE a.id_res=b.id_res AND save_name=''',block.DialogPrm(1).Data,''' AND a.id_project=',num2str(cisia.id_project));    
   data_save2db=fetch(cisia.conn,query);
@@ -1421,6 +1428,11 @@ elseif strcmp(num2str(strfind(block.DialogPrm(1).Data,'SAVE')),'1') % blocco SAV
   block.Dwork(4).Complexity      = 'Real'; % real
   block.Dwork(4).UsedAsDiscState = false;
   
+  block.Dwork(5).Name            = 'id_save2db';
+  block.Dwork(5).Dimensions      = 1;
+  block.Dwork(5).DatatypeID      = 0;      % double
+  block.Dwork(5).Complexity      = 'Real'; % real
+  block.Dwork(5).UsedAsDiscState = false;
   
 %-------------------------------------------------------------------------------  
   
@@ -1937,6 +1949,7 @@ elseif strcmp(num2str(strfind(block.DialogPrm(1).Data,'ROUTE')),'1')  % ROUTE EN
   
   
   block.Dwork(2).Data=0;  
+  block.Dwork(4).Data=data_route.id_routing(1);
 
 %---------------------------------------------------------------------------------
 elseif strcmp(num2str(strfind(block.DialogPrm(1).Data,'SAVE')),'1')  % SAVE ENTITY
@@ -1952,9 +1965,10 @@ elseif strcmp(num2str(strfind(block.DialogPrm(1).Data,'SAVE')),'1')  % SAVE ENTI
     a=[a 32*ones(1,cisia.max_save_dimension-n)];
 
     block.Dwork(1).Data = a;
-    block.Dwork(2).Data=0; 
+    block.Dwork(2).Data=0;  
     block.Dwork(3).Data=data_links.dim_res(1);
     block.Dwork(4).Data=zeros(1,data_links.dim_res(1)); 
+    block.Dwork(5).Data=data_links.id_save2db(1); 
   
 %---------------------------------------------------------------------------------
 elseif strcmp(num2str(strfind(block.DialogPrm(1).Data,'RFDB')),'1')  % RFDB ENTITY
@@ -2965,7 +2979,7 @@ elseif strcmp(num2str(strfind(block.DialogPrm(1).Data,'LINK')),'1') || strcmp(nu
         
         %disp([name_entity ' force minor'])
         block.NextTimeHit=block.CurrentTime+cisia.minor_sampling_time; % next time is minor hit
-        block.Dwork(2).data=0; % mimor hit issued
+        block.Dwork(2).data=0; % minor hit issued
     end
     
     
@@ -3260,7 +3274,7 @@ if isempty(strfind(block.DialogPrm(1).Data,'LINK'))  % NOT A LINK
 
                     if info==1
                     % insert entity in actual_entities
-                        query=strcat('INSERT INTO actual_entities (name_entity, block_handler) VALUES (''',name_entity,''',''',string(gcb),''')');
+                        query=strcat('INSERT INTO actual_entities (name_entity, block_handler,id_project,id,type) VALUES (''',name_entity,''',''',string(gcb),''',',num2str(cisia.id_project),',',num2str(block.Dwork(2).Data),',''ENTITY'')');
                         execute(cisia.conn,query);
 
                         for i=0:block.Dwork(5).Data
@@ -3331,6 +3345,16 @@ if isempty(strfind(block.DialogPrm(1).Data,'LINK'))  % NOT A LINK
     end % if not SAVE
 end % if not LINK
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if strcmp(num2str(strfind(block.DialogPrm(1).Data,'ROUTE')),'1')  % ROUTE
+    if info==1
+        % insert route in actual_entities
+        query=strcat('INSERT INTO actual_entities (name_entity, block_handler,id_project,id,type) VALUES (''',name_entity,''',''',string(gcb),''',',num2str(cisia.id_project),',',num2str(block.Dwork(4).Data),',''ROUTE'')');
+        execute(cisia.conn,query);
+    end
+end
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if strcmp(num2str(strfind(block.DialogPrm(1).Data,'SAVE')),'1')  % SAVE ENTITY
 
@@ -3355,7 +3379,7 @@ if strcmp(num2str(strfind(block.DialogPrm(1).Data,'SAVE')),'1')  % SAVE ENTITY
 
     if info==1
         % insert save in actual_entities
-        query=strcat('INSERT INTO actual_entities (name_entity, block_handler) VALUES (''',name_entity,''',''',string(gcb),''')');
+        query=strcat('INSERT INTO actual_entities (name_entity, block_handler,id_project,id,type) VALUES (''',name_entity,''',''',string(gcb),''',',num2str(cisia.id_project),',',num2str(block.Dwork(5).Data),',''SAVE2DB'')');
         execute(cisia.conn,query);
     end
 end
