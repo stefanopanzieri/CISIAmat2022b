@@ -17,7 +17,7 @@ function cisia_msfun(block)
 % calls to the main body of the function.  
 %
 %
-% VER. 3.2.2
+% VER. 3.2.1
 % DATE 20/03/2023 
 % AUTHOR: Stefano Panzieri - Roma Tre University
 %
@@ -44,7 +44,6 @@ setup(block);
 
 %% 
 function setup(block)
-
 
 global cisia;
 global cisia_entities;
@@ -145,7 +144,7 @@ name_entity=block.DialogPrm(1).Data;
 
 % Use the project specified in MASTER block
 
-if ~isfield(cisia,'id_project') || strcmp(name_entity,'CISIA_MASTER')
+if ~isfield(cisia,'id_project') 
 
     if ~strcmp(name_entity,'CISIA_MASTER')
 
@@ -171,8 +170,8 @@ if ~isfield(cisia,'id_project') || strcmp(name_entity,'CISIA_MASTER')
         return
     end
     cisia.id_project=data_project.id_project(1);
-    disp(strcat('CISIA project name:',DP,'; id project:',string(cisia.id_project)))
 
+ 
 end
 
   
@@ -264,7 +263,7 @@ end
     
       
   % Trova id_link
-  query=strcat('SELECT * FROM dynamic_links WHERE link_name=''',name_entity,''' AND id_project=',string(cisia.id_project));
+  query=strcat('SELECT * FROM dynamic_links WHERE link_name=''',name_entity,''' AND id_project=',num2str(cisia.id_project));
   data_link=fetch(cisia.conn, query);
   
   if height(data_link)==0
@@ -374,7 +373,7 @@ elseif strcmp(num2str(strfind(block.DialogPrm(1).Data,'ROUTE')),'1') % if CISIA 
     % drawnow('update')
       
   % Trova id_link
-  query=strcat('SELECT * FROM route_link WHERE routing_name=''',name_entity,''' AND id_project=',string(cisia.id_project));
+  query=strcat('SELECT * FROM route_link WHERE routing_name=''',name_entity,''' AND id_project=',num2str(cisia.id_project));
   data_routing=fetch(cisia.conn, query);
   
   if height(data_routing)==0
@@ -438,7 +437,7 @@ elseif strcmp(num2str(strfind(block.DialogPrm(1).Data,'ROUTE')),'1') % if CISIA 
   
   if block.DialogPrm(7).Data
       
-    query=strcat('SELECT * FROM route_link AS a JOIN resources AS c WHERE  a.id_project=c.id_project AND a.id_res=c.id_res AND a.routing_name=''', block.DialogPrm(1).Data,  ''' AND a.id_project=',string(cisia.id_project),' AND c.id_project=',string(cisia.id_project));
+    query=strcat('SELECT * FROM route_link AS a JOIN resources AS c WHERE  a.id_project=c.id_project AND a.id_res=c.id_res AND a.routing_name=''', block.DialogPrm(1).Data,  ''' AND a.id_project=',string(cisia.id_project));
     data_route=fetch(cisia.conn,query);
     
     % resource elements (vettore a n dimensioni di 0 e 1)
@@ -492,12 +491,12 @@ elseif strcmp(num2str(strfind(block.DialogPrm(1).Data,'ROUTE')),'1') % if CISIA 
       
   % Trova id_save2db
   
-  query=strcat('SELECT * FROM save2db AS a JOIN resources AS b WHERE a.id_res=b.id_res AND save_name=''',name_entity,''' AND a.id_project=',string(cisia.id_project),' AND b.id_project=',string(cisia.id_project));
+  query=strcat('SELECT * FROM save2db AS a JOIN resources AS b WHERE a.id_res=b.id_res AND save_name=''',name_entity,''' AND a.id_project=',num2str(cisia.id_project));
   data_save=fetch(cisia.conn, query);
   
   if height(data_save)==0
     disp(strcat('Save2DB does not exist:',block.DialogPrm(1).Data))
-    errorStruct.message = strcat('name of Save2DB doesn''t exist in project id=',string(cisia.id_project));
+    errorStruct.message = 'name of Save2DB doesn''t exist!';
     errorStruct.identifier = 'CISIA:wrong_save2db';  
     error(errorStruct) 
     return
@@ -575,7 +574,7 @@ elseif strcmp(num2str(strfind(block.DialogPrm(1).Data,'ROUTE')),'1') % if CISIA 
     
       
   % Trova id_rfdb
-  query=strcat('SELECT * FROM rfdb_node WHERE rfdb_name=''',name_entity,''' AND var_name=''',num2str(block.DialogPrm(4).Data),''' AND id_project=',string(cisia.id_project));
+  query=strcat('SELECT * FROM rfdb_node WHERE rfdb_name=''',name_entity,''' AND var_name=''',num2str(block.DialogPrm(4).Data),''' AND id_project=',num2str(cisia.id_project));
   data_rfdb=fetch(cisia.conn, query);
   
   if height(data_rfdb)==0
@@ -673,7 +672,7 @@ elseif strcmp(num2str(strfind(block.DialogPrm(1).Data,'ROUTE')),'1') % if CISIA 
   
   % Trova id_entity
   if cisia.loadfromfile==0
-    query=strcat('SELECT * FROM entity WHERE name_entity=''',name_entity,''' AND id_project=''',string(cisia.id_project),'''');
+    query=strcat('SELECT * FROM entity WHERE name_entity=''',name_entity,''' AND id_project=''',num2str(cisia.id_project),'''');
     data_entity=fetch(cisia.conn, query);
   end
     
@@ -695,7 +694,7 @@ elseif strcmp(num2str(strfind(block.DialogPrm(1).Data,'ROUTE')),'1') % if CISIA 
   %Numero di Input e di output
   
   if cisia.loadfromfile==0
-    query=strcat('SELECT * FROM entity_port WHERE id_entity=',string(id_entity),' AND id_project=',string(cisia.id_project));
+    query=strcat('SELECT * FROM entity_port WHERE id_entity=',string(id_entity),' AND id_project=',num2str(cisia.id_project));
     data_port=fetch(cisia.conn, query);
   end
   
@@ -710,7 +709,7 @@ elseif strcmp(num2str(strfind(block.DialogPrm(1).Data,'ROUTE')),'1') % if CISIA 
   if block.DialogPrm(5).Data
       state_in_output=1;
       if cisia.loadfromfile==0
-        query=strcat('SELECT * FROM status WHERE id_entity=', num2str(id_entity),' AND id_project=',string(cisia.id_project), ' ORDER BY id_var');
+        query=strcat('SELECT * FROM status WHERE id_entity=', num2str(id_entity),' AND id_project=',num2str(cisia.id_project), ' ORDER BY id_var');
         data3=fetch(cisia.conn, query);
       end
       num_state_var=height(data3);
@@ -728,7 +727,7 @@ elseif strcmp(num2str(strfind(block.DialogPrm(1).Data,'ROUTE')),'1') % if CISIA 
   
   % Imposta il nome del blocco e della maschera
   if cisia.loadfromfile==0
-    query2=strcat('SELECT * FROM entity_type WHERE id_type=',string(id_type),' AND id_project=',string(cisia.id_project));
+    query2=strcat('SELECT * FROM entity_type WHERE id_type=',string(id_type),' AND id_project=',num2str(cisia.id_project));
     data_entity_type=fetch(cisia.conn, query2);
   end
   
@@ -780,7 +779,7 @@ elseif strcmp(num2str(strfind(block.DialogPrm(1).Data,'ROUTE')),'1') % if CISIA 
 %% Controllo correttezza variabili di ingresso 
    % recupera i nomi delle risorse in ingresso
    if cisia.loadfromfile==0
-     query=strcat('SELECT * FROM entity_port AS a JOIN resources AS b ON a.id_res=b.id_res where a.id_entity=', num2str(id_entity), ' AND type_port=''INPUT''', ' AND a.id_project=',string(cisia.id_project), ' AND b.id_project=',string(cisia.id_project), ' ORDER BY a.id_res');
+     query=strcat('SELECT * FROM entity_port AS a JOIN resources AS b ON a.id_res=b.id_res where a.id_entity=', num2str(id_entity), ' AND type_port=''INPUT''', ' AND a.id_project=',num2str(cisia.id_project), ' ORDER BY a.id_res');
      data_input_port=fetch(cisia.conn, query);
    end
    
@@ -792,7 +791,7 @@ elseif strcmp(num2str(strfind(block.DialogPrm(1).Data,'ROUTE')),'1') % if CISIA 
   
   % Imposta i nomi dei segnali in uscita  
   if cisia.loadfromfile==0
-      query=strcat('SELECT * FROM entity_port AS a JOIN resources AS b ON a.id_res=b.id_res where a.id_entity=', num2str(id_entity), ' AND a.id_project=',string(cisia.id_project) ,' AND b.id_project=',string(cisia.id_project) ,' AND type_port=''OUTPUT'' ORDER BY a.id_res');
+      query=strcat('SELECT * FROM entity_port AS a JOIN resources AS b ON a.id_res=b.id_res where a.id_entity=', num2str(id_entity), ' AND a.id_project=',num2str(cisia.id_project) ,' AND type_port=''OUTPUT'' ORDER BY a.id_res');
       data_output_port=fetch(cisia.conn, query);
   end
   
@@ -867,7 +866,7 @@ elseif strcmp(num2str(strfind(block.DialogPrm(1).Data,'ROUTE')),'1') % if CISIA 
   
   %disp('Setup continuous states')
   if cisia.loadfromfile==0
-      query=strcat('SELECT * FROM status WHERE id_entity=', num2str(id_entity), ' AND val_type=''CONTINUOUS''', ' AND id_project=',string(cisia.id_project), ' ORDER BY id_var');
+      query=strcat('SELECT * FROM status WHERE id_entity=', num2str(id_entity), ' AND val_type=''CONTINUOUS''', ' AND id_project=',num2str(cisia.id_project), ' ORDER BY id_var');
       data_status=fetch(cisia.conn, query);
   end
   
@@ -1175,16 +1174,16 @@ global cisia;
   if strcmp(get_param(cisia.gcs,'SimulationStatus'),'stopped') && block.DialogPrm(6).Data==1
          
     %conn = database('cisia','root','cisia_mat');
-    query=strcat('UPDATE entity_type SET step_received=''', block.DialogPrm(7).Data  ,''' WHERE id_type=',num2str(cisia.id_type), ' AND id_project=',string(cisia.id_project) );
+    query=strcat('UPDATE entity_type SET step_received=''', block.DialogPrm(7).Data  ,''' WHERE id_type=',num2str(cisia.id_type), ' AND id_project=',num2str(cisia.id_project) );
     execute(cisia.conn, query)
     
-    query=strcat('UPDATE entity_type SET step_computed=''', block.DialogPrm(8).Data  ,''' WHERE id_type=',num2str(cisia.id_type), ' AND id_project=',string(cisia.id_project));
+    query=strcat('UPDATE entity_type SET step_computed=''', block.DialogPrm(8).Data  ,''' WHERE id_type=',num2str(cisia.id_type), ' AND id_project=',num2str(cisia.id_project));
     execute(cisia.conn, query)
     
-    query=strcat('UPDATE entity_type SET dynamic_computed=''', block.DialogPrm(9).Data  ,''' WHERE id_type=',num2str(cisia.id_type), ' AND id_project=',string(cisia.id_project));
+    query=strcat('UPDATE entity_type SET dynamic_computed=''', block.DialogPrm(9).Data  ,''' WHERE id_type=',num2str(cisia.id_type), ' AND id_project=',num2str(cisia.id_project));
     execute(cisia.conn, query)
     
-    query=strcat('UPDATE entity_type SET step_sended=''', block.DialogPrm(10).Data  ,''' WHERE id_type=',num2str(cisia.id_type), ' AND id_project=',string(cisia.id_project));
+    query=strcat('UPDATE entity_type SET step_sended=''', block.DialogPrm(10).Data  ,''' WHERE id_type=',num2str(cisia.id_type), ' AND id_project=',num2str(cisia.id_project));
     execute(cisia.conn, query)
     
     %close(cisia.conn)
@@ -1408,7 +1407,7 @@ elseif strcmp(num2str(strfind(block.DialogPrm(1).Data,'SAVE')),'1') % blocco SAV
   %disp(strcat('Post Setup:',block.DialogPrm(1).Data))
   block.NumDworks = 5;
   
-  query=strcat('SELECT * FROM save2db AS a JOIN resources AS b WHERE a.id_res=b.id_res AND save_name=''',block.DialogPrm(1).Data,''' AND a.id_project=',string(cisia.id_project), ' AND b.id_project=',string(cisia.id_project));    
+  query=strcat('SELECT * FROM save2db AS a JOIN resources AS b WHERE a.id_res=b.id_res AND save_name=''',block.DialogPrm(1).Data,''' AND a.id_project=',num2str(cisia.id_project));    
   data_save2db=fetch(cisia.conn,query);
   
   % offset
@@ -1489,7 +1488,7 @@ else % NORMAL ENTITY %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   
   % Troviamo id_entity
   if cisia.loadfromfile==0
-    query=strcat('SELECT * FROM entity WHERE name_entity=''',name_entity,''' AND id_project=''',string(cisia.id_project),'''');
+    query=strcat('SELECT * FROM entity WHERE name_entity=''',name_entity,''' AND id_project=''',num2str(cisia.id_project),'''');
     data_entity=fetch(cisia.conn, query);
   end
   
@@ -1497,7 +1496,7 @@ else % NORMAL ENTITY %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   
   
   if cisia.loadfromfile==0
-    query=strcat('SELECT * FROM entity_port AS a JOIN resources AS b ON a.id_res=b.id_res where a.id_entity=', num2str(id_entity), ' AND a.id_project=',string(cisia.id_project),' AND b.id_project=',string(cisia.id_project)');  
+    query=strcat('SELECT * FROM entity_port AS a JOIN resources AS b ON a.id_res=b.id_res where a.id_entity=', num2str(id_entity), ' AND a.id_project=',num2str(cisia.id_project));  
     data_entity_port=fetch(cisia.conn, query);
   end
   
@@ -1509,7 +1508,7 @@ else % NORMAL ENTITY %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Controllo correttezza variabili di ingresso
   % recupera i nomi delle risorse in ingresso
   if cisia.loadfromfile==0
-    query=strcat('SELECT * FROM entity_port AS a JOIN resources AS b ON a.id_res=b.id_res where a.id_entity=', num2str(id_entity), ' AND type_port=''INPUT''', ' AND a.id_project=',string(cisia.id_project), ' AND b.id_project=',string(cisia.id_project), ' ORDER BY a.id_res');
+    query=strcat('SELECT * FROM entity_port AS a JOIN resources AS b ON a.id_res=b.id_res where a.id_entity=', num2str(id_entity), ' AND type_port=''INPUT''', ' AND a.id_project=',num2str(cisia.id_project), ' ORDER BY a.id_res');
     data_input_port=fetch(cisia.conn, query);
     % questa ritorna anche 'data_input_port.default_val'
 
@@ -1579,7 +1578,7 @@ else % NORMAL ENTITY %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %disp('Reading State Variables');
   if cisia.loadfromfile==0
-    query=strcat('SELECT * FROM status AS a JOIN variables AS b ON a.id_var=b.id_var where a.id_entity=', num2str(id_entity), ' AND a.id_project=',string(cisia.id_project),' AND b.id_project=',string(cisia.id_project),' ORDER BY a.id_var');
+    query=strcat('SELECT * FROM status AS a JOIN variables AS b ON a.id_var=b.id_var where a.id_entity=', num2str(id_entity), ' AND a.id_project=',num2str(cisia.id_project),' ORDER BY a.id_var');
     data_status=fetch(cisia.conn, query);
   end
   
@@ -1921,7 +1920,7 @@ if strcmp(name_entity,'CISIA_MASTER')
 %% ---
 elseif strcmp(num2str(strfind(block.DialogPrm(1).Data,'LINK')),'1')  % LINK ENTITY
 
-  query=strcat('SELECT * FROM dynamic_links WHERE link_name=''',block.DialogPrm(1).Data,''' AND id_project=',string(cisia.id_project));
+  query=strcat('SELECT * FROM dynamic_links WHERE link_name=''',block.DialogPrm(1).Data,''' AND id_project=',num2str(cisia.id_project));
   data_links=fetch(cisia.conn, query);    
   block.Dwork(2).Data=0;
   block.Dwork(3).Data=data_links.id_link(1);
@@ -1941,7 +1940,7 @@ elseif strcmp(num2str(strfind(block.DialogPrm(1).Data,'ROUTE')),'1')  % ROUTE EN
   %PortHandles=get_param(gcb,'PortHandles');
   %name_res=get_param(PortHandles.Inport(1),'Name');
   
-  query=strcat('SELECT * FROM route_link AS a JOIN resources AS c WHERE  a.id_project=c.id_project AND a.id_res=c.id_res AND a.routing_name=''', block.DialogPrm(1).Data,  ''' AND a.id_project=',string(cisia.id_project),'  AND c.id_project=',string(cisia.id_project));
+  query=strcat('SELECT * FROM route_link AS a JOIN resources AS c WHERE  a.id_project=c.id_project AND a.id_res=c.id_res AND a.routing_name=''', block.DialogPrm(1).Data,  ''' AND a.id_project=',string(cisia.id_project));
   data_route=fetch(cisia.conn,query);
   
   if height(data_route)>0
@@ -1954,7 +1953,7 @@ elseif strcmp(num2str(strfind(block.DialogPrm(1).Data,'ROUTE')),'1')  % ROUTE EN
   else
       % bisogna leggere la tabella di instradamento
       
-      query=strcat('SELECT * FROM route_link AS a JOIN routing_table AS b WHERE  a.id_project=b.id_project AND a.id_routing=b.id_routing AND a.routing_name=''',block.DialogPrm(1).Data,''' AND a.id_project=',string(cisia.id_project), ' AND b.id_project=',string(cisia.id_project));
+      query=strcat('SELECT * FROM route_link AS a JOIN routing_table AS b WHERE  a.id_project=b.id_project AND a.id_routing=b.id_routing AND a.routing_name=''',block.DialogPrm(1).Data,''' AND a.id_project=',num2str(cisia.id_project));
       data_routing=fetch(cisia.conn, query);
       
       if height(data_routing)>0
@@ -1975,7 +1974,7 @@ elseif strcmp(num2str(strfind(block.DialogPrm(1).Data,'ROUTE')),'1')  % ROUTE EN
 elseif strcmp(num2str(strfind(block.DialogPrm(1).Data,'SAVE')),'1')  % SAVE ENTITY
 
  
-    query=strcat('SELECT * FROM save2db AS a JOIN resources AS b WHERE a.id_res=b.id_res AND save_name=''',block.DialogPrm(1).Data,''' AND a.id_project=',string(cisia.id_project),' AND b.id_project=',string(cisia.id_project)');
+    query=strcat('SELECT * FROM save2db AS a JOIN resources AS b WHERE a.id_res=b.id_res AND save_name=''',block.DialogPrm(1).Data,''' AND a.id_project=',num2str(cisia.id_project));
     data_links=fetch(cisia.conn, query);
     
     PortHandles=get_param(gcb,'PortHandles');
@@ -1994,7 +1993,7 @@ elseif strcmp(num2str(strfind(block.DialogPrm(1).Data,'SAVE')),'1')  % SAVE ENTI
 elseif strcmp(num2str(strfind(block.DialogPrm(1).Data,'RFDB')),'1')  % RFDB ENTITY
 
 
-  query=strcat('SELECT * FROM rfdb_node WHERE rfdb_name=''', block.DialogPrm(1).Data, '''',' AND id_project=',string(cisia.id_project));
+  query=strcat('SELECT * FROM rfdb_node WHERE rfdb_name=''', block.DialogPrm(1).Data, '''',' AND id_project=',num2str(cisia.id_project));
   data_links=fetch(cisia.conn, query);
   
  
@@ -2015,7 +2014,7 @@ else
   % Ricavo id_entity e id_type
   
   if cisia.loadfrommask==0
-      query=strcat('SELECT * FROM entity WHERE name_entity=''',name_entity,''' AND id_project=''',string(cisia.id_project),'''');
+      query=strcat('SELECT * FROM entity WHERE name_entity=''',name_entity,''' AND id_project=''',num2str(cisia.id_project),'''');
       data_entity=fetch(cisia.conn, query);
       id_entity=data_entity.id_entity(1);
       id_type=data_entity.id_type(1);
@@ -2040,10 +2039,10 @@ else
   num_state_var=block.Dwork(7).Dimensions;
   
   if cisia.loadfrommask==0
-    query=strcat('SELECT * FROM status AS a JOIN variables AS b ON a.id_var=b.id_var where a.id_entity=', num2str(id_entity), ' AND a.id_project=',string(cisia.id_project), ' AND b.id_project=',string(cisia.id_project),' ORDER BY a.id_var');
+    query=strcat('SELECT * FROM status AS a JOIN variables AS b ON a.id_var=b.id_var where a.id_entity=', num2str(id_entity), ' AND a.id_project=',num2str(cisia.id_project), ' ORDER BY a.id_var');
     data_status=fetch(cisia.conn, query);
   else
-    query=strcat('SELECT val_status FROM status WHERE id_entity=', num2str(id_entity), ' AND id_project=',string(cisia.id_project), ' ORDER BY id_var');
+    query=strcat('SELECT val_status FROM status WHERE id_entity=', num2str(id_entity), ' AND id_project=',num2str(cisia.id_project), ' ORDER BY id_var');
     data_val_status=fetch(cisia.conn, query);
   
     % estrai le variabili dalla maschera
@@ -2180,7 +2179,7 @@ else
 
 
   if cisia.loadfrommask==0
-      query2=strcat('SELECT * FROM entity_type WHERE id_type=',string(id_type), ' AND id_project=',string(cisia.id_project));
+      query2=strcat('SELECT * FROM entity_type WHERE id_type=',string(id_type), ' AND id_project=',num2str(cisia.id_project));
       data_entity_type=fetch(cisia.conn, query2);
   
       step_received=data_entity_type.step_received{1};
@@ -2206,7 +2205,7 @@ else
    
   % recupera i nomi delle risorse in ingresso per scriverli nella maschera
   if cisia.loadfrommask==0
-    query=strcat('SELECT * FROM entity_port AS a JOIN resources AS b ON a.id_res=b.id_res where a.id_entity=', num2str(id_entity), ' AND type_port=''INPUT''', ' AND a.id_project=',string(cisia.id_project),' AND b.id_project=',string(cisia.id_project),' ORDER BY a.id_res');
+    query=strcat('SELECT * FROM entity_port AS a JOIN resources AS b ON a.id_res=b.id_res where a.id_entity=', num2str(id_entity), ' AND type_port=''INPUT''', ' AND a.id_project=',num2str(cisia.id_project),' ORDER BY a.id_res');
     data_input_port=fetch(cisia.conn, query);
   else
     num_inputs=block.NumInputPorts;
@@ -2264,7 +2263,7 @@ else
           end 
 
          % recupera i nomi delle risorse in uscita
-          query=strcat('SELECT * FROM entity_port AS a JOIN resources AS b ON a.id_res=b.id_res where a.id_entity=', num2str(id_entity), ' AND type_port=''OUTPUT''', ' AND a.id_project=',string(cisia.id_project),' AND b.id_project=',string(cisia.id_project),' ORDER BY a.id_res');
+          query=strcat('SELECT * FROM entity_port AS a JOIN resources AS b ON a.id_res=b.id_res where a.id_entity=', num2str(id_entity), ' AND type_port=''OUTPUT''', ' AND a.id_project=',num2str(cisia.id_project),' ORDER BY a.id_res');
           data_output_port=fetch(cisia.conn, query);
           %inp_port_dim=data.dim_res;
           num_outputs=height(data_output_port);
@@ -2531,7 +2530,7 @@ else
       
       
       if cisia.loadfrommask==0
-        query=strcat('SELECT * FROM entity_port AS a JOIN resources AS b ON a.id_res=b.id_res where a.id_entity=', num2str(id_entity), ' AND type_port=''OUTPUT''', ' AND a.id_project=',string(cisia.id_project), ' AND b.id_project=',string(cisia.id_project),' ORDER BY a.id_res');
+        query=strcat('SELECT * FROM entity_port AS a JOIN resources AS b ON a.id_res=b.id_res where a.id_entity=', num2str(id_entity), ' AND type_port=''OUTPUT''', ' AND a.id_project=',num2str(cisia.id_project), ' ORDER BY a.id_res');
         data_entity_port=fetch(cisia.conn, query);
       else
         num_outputs=block.NumOutputPorts;
@@ -3300,7 +3299,7 @@ if isempty(strfind(block.DialogPrm(1).Data,'LINK'))  % NOT A LINK
 
                     if info==1
                     % insert entity in actual_entities
-                        query=strcat('INSERT INTO actual_entities (name_entity, block_handler,id_project,id,type) VALUES (''',name_entity,''',''',string(gcb),''',',string(cisia.id_project),',',num2str(block.Dwork(2).Data),',''ENTITY'')');
+                        query=strcat('INSERT INTO actual_entities (name_entity, block_handler,id_project,id,type) VALUES (''',name_entity,''',''',string(gcb),''',',num2str(cisia.id_project),',',num2str(block.Dwork(2).Data),',''ENTITY'')');
                         execute(cisia.conn,query);
 
                         for i=0:block.Dwork(5).Data
@@ -3375,16 +3374,16 @@ end % if not LINK
 if strcmp(num2str(strfind(block.DialogPrm(1).Data,'RFDB')),'1')  % RFDB
     if info==1
         % insert route in actual_entities
-        query=strcat('INSERT INTO actual_entities (name_entity, block_handler,id_project,id,type) VALUES (''',name_entity,''',''',string(gcb),''',',string(cisia.id_project),',',num2str(block.Dwork(3).Data),',''RFDB'')');
+        query=strcat('INSERT INTO actual_entities (name_entity, block_handler,id_project,id,type) VALUES (''',name_entity,''',''',string(gcb),''',',num2str(cisia.id_project),',',num2str(block.Dwork(3).Data),',''RFDB'')');
         execute(cisia.conn,query);
     end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if strcmp(num2str(strfind(block.DialogPrm(1).Data,'DLINK')),'1')  % LINK
+if strcmp(num2str(strfind(block.DialogPrm(1).Data,'LINK')),'1')  % LINK
     if info==1
         % insert route in actual_entities
-        query=strcat('INSERT INTO actual_entities (name_entity, block_handler,id_project,id,type) VALUES (''',name_entity,''',''',string(gcb),''',',string(cisia.id_project),',',num2str(block.Dwork(3).Data),',''LINK'')');
+        query=strcat('INSERT INTO actual_entities (name_entity, block_handler,id_project,id,type) VALUES (''',name_entity,''',''',string(gcb),''',',num2str(cisia.id_project),',',num2str(block.Dwork(3).Data),',''LINK'')');
         execute(cisia.conn,query);
     end
 end
@@ -3393,7 +3392,7 @@ end
 if strcmp(num2str(strfind(block.DialogPrm(1).Data,'ROUTE')),'1')  % ROUTE
     if info==1
         % insert route in actual_entities
-        query=strcat('INSERT INTO actual_entities (name_entity, block_handler,id_project,id,type) VALUES (''',name_entity,''',''',string(gcb),''',',string(cisia.id_project),',',num2str(block.Dwork(4).Data),',''ROUTE'')');
+        query=strcat('INSERT INTO actual_entities (name_entity, block_handler,id_project,id,type) VALUES (''',name_entity,''',''',string(gcb),''',',num2str(cisia.id_project),',',num2str(block.Dwork(4).Data),',''ROUTE'')');
         execute(cisia.conn,query);
     end
 end
@@ -3422,7 +3421,7 @@ if strcmp(num2str(strfind(block.DialogPrm(1).Data,'SAVE')),'1')  % SAVE ENTITY
 
     if info==1
         % insert save in actual_entities
-        query=strcat('INSERT INTO actual_entities (name_entity, block_handler,id_project,id,type) VALUES (''',name_entity,''',''',string(gcb),''',',string(cisia.id_project),',',num2str(block.Dwork(5).Data),',''SAVE2DB'')');
+        query=strcat('INSERT INTO actual_entities (name_entity, block_handler,id_project,id,type) VALUES (''',name_entity,''',''',string(gcb),''',',num2str(cisia.id_project),',',num2str(block.Dwork(5).Data),',''SAVE2DB'')');
         execute(cisia.conn,query);
     end
 end
