@@ -2,7 +2,7 @@ function cisia_msfun(block)
 %MSFUNTMPL A Template for a MATLAB S-Function
 %   The MATLAB S-function is written as a MATLAB function with the
 %   same name as the S-function. Replace 'msfuntmpl' with the name
-%   of your S-function.  
+%   of your S-function.  -
 %
 %   It should be noted that the MATLAB S-function is very similar
 %   to Level-2 C-Mex S-functions. You should be able to get more 
@@ -18,7 +18,7 @@ function cisia_msfun(block)
 %
 %
 % VER. 3.2.2
-% DATE 20/03/2023 
+% DATE 17/05/2023 
 % AUTHOR: Stefano Panzieri - Roma Tre University
 %
 %
@@ -258,9 +258,9 @@ end
     
     
 %% --------------------------------------------    
-  elseif strcmp(num2str(strfind(block.DialogPrm(1).Data,'LINK')),'1') % if CISIA LINK
+  elseif strcmp(num2str(strfind(block.DialogPrm(1).Data,'DLINK')),'1') % if CISIA DLINK
       
-    % disp(strcat('LINK Setup:',block.DialogPrm(1).Data))    
+    % disp(strcat('DLINK Setup:',block.DialogPrm(1).Data))    
     
       
   % Trova id_link
@@ -299,7 +299,7 @@ end
   
   % Imposta il nome del blocco e della maschera e il colore
   h=Simulink.Mask.get(gcb);
-  set(h,'Display',strcat('disp(''','D LINK',''')'));
+  set(h,'Display',strcat('disp(''','DLINK',''')'));
   set_param(gcb,'Name',[data_link.link_name{1} ' (' num2str(data_link.id_link(1)) ')']);
   set_param(gcb,'BackgroundColor','[0 0.6 0.9]')   
   
@@ -915,7 +915,7 @@ elseif strcmp(num2str(strfind(block.DialogPrm(1).Data,'ROUTE')),'1') % if CISIA 
   
   %block.SampleTimes = [block.DialogPrm(2).Data 0];
   
-  end % if NOT MASTER OR LINK OR SAVE
+  end % if NOT MASTER OR DLINK OR SAVE
   
 
   
@@ -1169,7 +1169,7 @@ global cisia;
   
   
   
-  if ~strcmp(block.DialogPrm(1).Data, 'CISIA_MASTER') &&  isempty(strfind(block.DialogPrm(1).Data,'LINK')) &&  isempty(strfind(block.DialogPrm(1).Data,'SAVE')) &&  isempty(strfind(block.DialogPrm(1).Data,'ROUTE')) &&  isempty(strfind(block.DialogPrm(1).Data,'RFDB'))
+  if ~strcmp(block.DialogPrm(1).Data, 'CISIA_MASTER') &&  isempty(strfind(block.DialogPrm(1).Data,'DLINK')) &&  isempty(strfind(block.DialogPrm(1).Data,'SAVE')) &&  isempty(strfind(block.DialogPrm(1).Data,'ROUTE')) &&  isempty(strfind(block.DialogPrm(1).Data,'RFDB'))
     % è una normale entity
       
   if strcmp(get_param(cisia.gcs,'SimulationStatus'),'stopped') && block.DialogPrm(6).Data==1
@@ -1334,7 +1334,7 @@ if strcmp(name_entity,'CISIA_MASTER')
   %set_param(gcb,'BackgroundColor','red')
    
 %% --------------
-elseif strcmp(num2str(strfind(block.DialogPrm(1).Data,'LINK')),'1') % blocco LINK
+elseif strcmp(num2str(strfind(block.DialogPrm(1).Data,'DLINK')),'1') % blocco DLINK
     
   %disp(strcat('Post Setup:',block.DialogPrm(1).Data))
   block.NumDworks = 3;
@@ -1919,7 +1919,7 @@ if strcmp(name_entity,'CISIA_MASTER')
   
   
 %% ---
-elseif strcmp(num2str(strfind(block.DialogPrm(1).Data,'LINK')),'1')  % LINK ENTITY
+elseif strcmp(num2str(strfind(block.DialogPrm(1).Data,'DLINK')),'1')  % DLINK ENTITY
 
   query=strcat('SELECT * FROM dynamic_links WHERE link_name=''',block.DialogPrm(1).Data,''' AND id_project=',string(cisia.id_project));
   data_links=fetch(cisia.conn, query);    
@@ -2721,7 +2721,7 @@ if strcmp(name_entity,'CISIA_MASTER')
     
     
 %-------------------------------------------------------------------------------------    
-elseif strcmp(num2str(strfind(block.DialogPrm(1).Data,'LINK')),'1')  % LINK ENTITY
+elseif strcmp(num2str(strfind(block.DialogPrm(1).Data,'DLINK')),'1')  % DLINK ENTITY
     
     if block.DialogPrm(7).Data
         for i=1:block.NumOutputPorts
@@ -2995,7 +2995,7 @@ if strcmp(name_entity,'CISIA_MASTER') % CISIA MASTER
     
     
     
-elseif strcmp(num2str(strfind(block.DialogPrm(1).Data,'LINK')),'1') || strcmp(num2str(strfind(block.DialogPrm(1).Data,'ROUTE')),'1') || strcmp(num2str(strfind(block.DialogPrm(1).Data,'RFDB')),'1')% LINK or ROUTE or RFDB
+elseif strcmp(num2str(strfind(block.DialogPrm(1).Data,'DLINK')),'1') || strcmp(num2str(strfind(block.DialogPrm(1).Data,'ROUTE')),'1') || strcmp(num2str(strfind(block.DialogPrm(1).Data,'RFDB')),'1')% DLINK or ROUTE or RFDB
     
     if cisia.force_major_timehit==1 & block.Dwork(2).data==0  % a major hit can be issued
         %disp([name_entity ' force major to ' num2str(cisia.last_major_timehit)])
@@ -3055,12 +3055,12 @@ else
     end
     
     
-end % CISIA _MASTER o LINK o SAVE o ROUTE o RFDB
+end % CISIA _MASTER o DLINK o SAVE o ROUTE o RFDB
 
 %% Perform the update for cisia blocks
 
 
-if (~strcmp(name_entity,'CISIA_MASTER')) && isempty(strfind(block.DialogPrm(1).Data,'LINK'))  && isempty(strfind(block.DialogPrm(1).Data,'SAVE')) && isempty(strfind(block.DialogPrm(1).Data,'ROUTE')) && isempty(strfind(block.DialogPrm(1).Data,'RFDB'))
+if (~strcmp(name_entity,'CISIA_MASTER')) && isempty(strfind(block.DialogPrm(1).Data,'DLINK'))  && isempty(strfind(block.DialogPrm(1).Data,'SAVE')) && isempty(strfind(block.DialogPrm(1).Data,'ROUTE')) && isempty(strfind(block.DialogPrm(1).Data,'RFDB'))
 
     %if input are changed then cisia.last_input_update=1;
     %cisia.last_input_update=0;
@@ -3180,7 +3180,7 @@ name_entity=block.DialogPrm(1).Data;
 
 %disp(strcat('Derivatives for:',name_entity))
 
-if (~strcmp(name_entity,'CISIA_MASTER')) && isempty(strfind(block.DialogPrm(1).Data,'LINK')) && isempty(strfind(block.DialogPrm(1).Data,'SAVE'))  && isempty(strfind(block.DialogPrm(1).Data,'ROUTE')) && isempty(strfind(block.DialogPrm(1).Data,'RFDB'))
+if (~strcmp(name_entity,'CISIA_MASTER')) && isempty(strfind(block.DialogPrm(1).Data,'DLINK')) && isempty(strfind(block.DialogPrm(1).Data,'SAVE'))  && isempty(strfind(block.DialogPrm(1).Data,'ROUTE')) && isempty(strfind(block.DialogPrm(1).Data,'RFDB'))
     
     %disp('derivatives')
 
@@ -3285,7 +3285,7 @@ global cisia;
 name_entity=block.DialogPrm(1).Data;
 
 
-if isempty(strfind(block.DialogPrm(1).Data,'LINK'))  % NOT A LINK
+if isempty(strfind(block.DialogPrm(1).Data,'DLINK'))  % NOT A DLINK
 
     if isempty(strfind(block.DialogPrm(1).Data,'SAVE'))  % NOT A SAVE
 
@@ -3369,7 +3369,7 @@ if isempty(strfind(block.DialogPrm(1).Data,'LINK'))  % NOT A LINK
             end % if not RFDB
         end % if not ROUTE
     end % if not SAVE
-end % if not LINK
+end % if not DLINK
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if strcmp(num2str(strfind(block.DialogPrm(1).Data,'RFDB')),'1')  % RFDB
@@ -3381,10 +3381,10 @@ if strcmp(num2str(strfind(block.DialogPrm(1).Data,'RFDB')),'1')  % RFDB
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if strcmp(num2str(strfind(block.DialogPrm(1).Data,'DLINK')),'1')  % LINK
+if strcmp(num2str(strfind(block.DialogPrm(1).Data,'DLINK')),'1')  % DLINK
     if info==1
         % insert route in actual_entities
-        query=strcat('INSERT INTO actual_entities (name_entity, block_handler,id_project,id,type) VALUES (''',name_entity,''',''',string(gcb),''',',string(cisia.id_project),',',num2str(block.Dwork(3).Data),',''LINK'')');
+        query=strcat('INSERT INTO actual_entities (name_entity, block_handler,id_project,id,type) VALUES (''',name_entity,''',''',string(gcb),''',',string(cisia.id_project),',',num2str(block.Dwork(3).Data),',''DLINK'')');
         execute(cisia.conn,query);
     end
 end
