@@ -76,7 +76,8 @@ cisia.time_past_sec=0;
 cisia.savetofile=0;
 cisia.max_save_dimension=30;
 cisia.identity_count=0;
-
+cisia.CurrentTime=0;
+cisia.version='';
 
 if strcmp(get_param(cisia.gcs,'SimulationStatus'),'initializing')
     cisia.num_blocks=0;
@@ -241,13 +242,23 @@ end
     
     block.NumContStates = 0;
     
-    block.NumDialogPrms     = 11;
-    block.DialogPrmsTunable = {'Tunable','Tunable','Tunable','Tunable','Tunable','Tunable','Tunable','Tunable','Tunable','Tunable','Tunable'};
 
+    if isempty(strfind(get_param(gcb,'MaskDescription'),'v.2'))
+        block.NumDialogPrms     = 11;
+        block.DialogPrmsTunable = {'Tunable','Tunable','Tunable','Tunable','Tunable','Tunable','Tunable','Tunable','Tunable','Tunable','Tunable'};
+        cisia.version='v.1';
+        cisia.save_ports=0;
+
+       else
+        block.NumDialogPrms     = 12;
+        block.DialogPrmsTunable = {'Tunable','Tunable','Tunable','Tunable','Tunable','Tunable','Tunable','Tunable','Tunable','Tunable','Tunable','Tunable'};
+        cisia.version='v.2';
+        cisia.save_ports=block.DialogPrm(12).Data;
+    end
+    
     block.SampleTimes=[-2 0];
     
-    
-    
+
     set_param(gcb,'BackgroundColor','cyan')
     
     cisia.colors=block.DialogPrm(5).Data;
@@ -1920,6 +1931,11 @@ if strcmp(name_entity,'CISIA_MASTER')
     query=strcat('TRUNCATE actual_entities');
     execute(cisia.conn, query)
     
+   % clean run_output_ports table
+    query=strcat('TRUNCATE run_output_ports');
+    execute(cisia.conn, query)
+    
+
 
   
   
@@ -2701,7 +2717,7 @@ global cisia;
 
 name_entity=block.DialogPrm(1).Data;
 %user.name_entity=name_entity;
-
+cisia.CurrentTime=block.CurrentTime;
 
 
 
@@ -3051,9 +3067,7 @@ else
     if cisia.force_major_timehit==1 & block.Dwork(10).data==0  % a major hit can be issued
         %disp([name_entity ' force major to ' num2str(cisia.last_major_timehit)])
         block.NextTimeHit=cisia.last_major_timehit; % next time hit has already been computed 
-        if strcmp(name_entity,'PLUTO_1')
-            disp(strcat('Entity NextTimeHit major:',string(cisia.last_major_timehit)))
-        end
+
 
         block.Dwork(10).data=1; % major hit issued
                     
@@ -3066,9 +3080,6 @@ else
         
         %disp([name_entity ' force minor'])
         block.NextTimeHit=block.CurrentTime+cisia.minor_sampling_time; % next time is minor hit
-        if strcmp(name_entity,'PLUTO_1')
-            disp(strcat('Entity NextTimeHit minor:',string(block.CurrentTime+cisia.minor_sampling_time)))
-        end
         block.Dwork(10).data=0; % mimor hit issued
     end
     
@@ -3383,6 +3394,30 @@ if isempty(strfind(block.DialogPrm(1).Data,'DLINK'))  % NOT A DLINK
                        end
                    end
 
+                   %% Save Ports
+                   if cisia.save_ports==1
+                        % recupero l'elenco delle porte e i loro valori
+                        num_outputs=block.NumOutputPorts;
+                        data_entity_port = table('Size', [num_outputs 4],'VariableNames', {'sim_time','name_entity','port_name','port_value'},'VariableTypes', {'double','string','string','string'});
+                        PortHandles=get_param(gcb,'PortHandles');
+                        for i=1:num_outputs
+
+                            data_entity_port.sim_time(i)=block.CurrentTime;
+                            data_entity_port.name_entity(i)=name_entity;
+                            data_entity_port.port_name(i)=get_param(PortHandles.Outport(i),'Name');
+                            data_entity_port.port_value(i)=num2str(block.OutputPort(i).Data');
+                            
+                        end
+                        
+                        %disp(name_entity)
+                        %disp(data_entity_port)
+
+                        % li inserisco nella tabella run_output_ports
+                        
+                        datainsert(cisia.conn,'run_output_ports',data_entity_port.Properties.VariableNames,data_entity_port);
+                   end
+
+
                 end % if block.Dwork(5).Data>0
 
             end % if not RFDB
@@ -3457,19 +3492,37 @@ function [v]=timed_value(valori,tempi,t,CurrentTime)
     v=valori(indice(end));
 
 
-function Buffer_out=push_buffer(resource,Buffer_in,t)
+function Buffer_out=push_buffer(resource,Buffer_in)
 global cisia;
 
-    if t==cisia.last_major_timehit
-        disp(strcat('Push:',string(cisia.last_major_timehit)))
-        Buffer_out=[t; resource;Buffer_in(1:end-2)];
-        disp(Buffer_out')
+    if cisia.CurrentTime==cisia.last_major_timehit
+        %disp(strcat('current time: ',string(cisia.CurrentTime)))
+        %disp(strcat('Push:',string(cisia.last_major_timehit)))
+        Buffer_out=[cisia.CurrentTime; resource;Buffer_in(1:end-2)];
+        %disp(Buffer_out(1:20)')
 
     else
         Buffer_out=Buffer_in;
+        Buffer_out(2)=resource;
     end
 
 
+function val=delayed(Buffer,delay,init)
+global cisia;
+
+    %disp(strcat('current time: ',string(cisia.CurrentTime)))
+    %disp(strcat('last_major_timehit:',string(cisia.last_major_timehit)))
+    back=floor(cisia.last_major_timehit-delay);
+    if back<=0
+        val=init;
+    else
+        index=find(Buffer(1:2:end)-back<=0, 1 );
+        val=Buffer(2*index);
+    end
+
+    
+
+    
 
 
     
