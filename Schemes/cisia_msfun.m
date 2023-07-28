@@ -17,8 +17,8 @@ function cisia_msfun(block)
 % calls to the main body of the function.  
 %
 %
-% VER. 3.2.3
-% DATE 06/07/2023 
+% VER. 3.2.4
+% DATE 27/07/2023 
 % AUTHOR: Stefano Panzieri - Roma Tre University
 %
 %
@@ -2917,7 +2917,8 @@ if strcmp(name_entity,'CISIA_MASTER') % CISIA MASTER
             cisia.last_major_timehit=cisia.major_sampling_time(cisia.time_index); % next major hit
            
         else
-            cisia.last_major_timehit=block.CurrentTime+1; % next major hit di default
+            cisia.last_major_timehit=floor(block.CurrentTime+1); % next major hit di default
+
         end
         
         
@@ -2927,6 +2928,7 @@ if strcmp(name_entity,'CISIA_MASTER') % CISIA MASTER
         
         %current_time=block.CurrentTime
         block.NextTimeHit=cisia.last_major_timehit; % next time hit is major hit
+        disp(strcat('Next TimeHit MASTER:',string(cisia.last_major_timehit)))
         
         cisia.force_major_timehit=1; % force major hit for every block
         cisia.last_input_update=1;
@@ -3049,6 +3051,10 @@ else
     if cisia.force_major_timehit==1 & block.Dwork(10).data==0  % a major hit can be issued
         %disp([name_entity ' force major to ' num2str(cisia.last_major_timehit)])
         block.NextTimeHit=cisia.last_major_timehit; % next time hit has already been computed 
+        if strcmp(name_entity,'PLUTO_1')
+            disp(strcat('Entity NextTimeHit major:',string(cisia.last_major_timehit)))
+        end
+
         block.Dwork(10).data=1; % major hit issued
                     
         % Save the state
@@ -3060,6 +3066,9 @@ else
         
         %disp([name_entity ' force minor'])
         block.NextTimeHit=block.CurrentTime+cisia.minor_sampling_time; % next time is minor hit
+        if strcmp(name_entity,'PLUTO_1')
+            disp(strcat('Entity NextTimeHit minor:',string(block.CurrentTime+cisia.minor_sampling_time)))
+        end
         block.Dwork(10).data=0; % mimor hit issued
     end
     
@@ -3265,6 +3274,7 @@ if cisia.num_blocks==0
     disp('LAST BLOCK TERMINATED')
     disp(strcat('Termination time:',num2str(toc(cisia.tic3))))
     disp(strcat('Total elapsed time:',num2str(toc(cisia.tic))))
+    assignin('base','cisia',cisia)
 end
     
 
@@ -3441,11 +3451,28 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % AUXILIARY FUNCTIONS
 
-function [v]=timed_value(valori,tempi,t)
+function [v]=timed_value(valori,tempi,t,CurrentTime)
 
     indice=find(tempi<=t);
     v=valori(indice(end));
 
+
+function Buffer_out=push_buffer(resource,Buffer_in,t)
+global cisia;
+
+    if t==cisia.last_major_timehit
+        disp(strcat('Push:',string(cisia.last_major_timehit)))
+        Buffer_out=[t; resource;Buffer_in(1:end-2)];
+        disp(Buffer_out')
+
+    else
+        Buffer_out=Buffer_in;
+    end
+
+
+
+
+    
 
 
 
